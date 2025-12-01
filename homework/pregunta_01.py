@@ -71,3 +71,44 @@ def pregunta_01():
 
 
     """
+    import pandas as pd
+    import zipfile
+    import os
+    
+    with zipfile.ZipFile("files/input.zip", "r") as z:
+        z.extractall(".")
+    
+    if not os.path.exists("files/output"):
+        os.makedirs("files/output")
+        
+    def build_dataset(dataset_type):
+        base_path = f"input/{dataset_type}"
+        data = []
+        
+        sentiments = ["negative", "neutral", "positive"]
+        
+        for sentiment in sentiments:
+            folder_path = os.path.join(base_path, sentiment)
+            
+            if os.path.exists(folder_path):
+                files = os.listdir(folder_path)
+                
+                for filename in files:
+                    if filename.endswith(".txt"):
+                        filepath = os.path.join(folder_path, filename)
+                        
+                        with open(filepath, "r", encoding="utf-8") as f:
+                            phrase = f.read()
+                            
+                        data.append([phrase, sentiment])
+        
+        df = pd.DataFrame(data, columns=["phrase", "target"])
+        return df
+
+    train_df = build_dataset("train")
+    train_df.to_csv("files/output/train_dataset.csv", index=False)
+    
+    test_df = build_dataset("test")
+    test_df.to_csv("files/output/test_dataset.csv", index=False)
+
+    return True
